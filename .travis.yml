@@ -8,10 +8,17 @@ language: julia
 os:
   - linux
   - osx
+#  - windows
 
 julia:
-  - 1.2
   - 1.3
+
+matrix:
+  include:
+    - os: linux
+      julia: 1.1
+    - os: linux
+      julia: nightly
 
 services:
   - postgresql
@@ -31,6 +38,8 @@ before_install:
   - psql --version
 
 before_script:
+  - julia --color=yes --project -e 'using Pkg; pkg"dev DecFP"'
+
   # PostgreSQL - osx
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then rm -rf /usr/local/var/postgres                                                               ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then initdb /usr/local/var/postgres -E utf8                                                       ; fi
@@ -65,10 +74,10 @@ before_script:
   - mysql --version
 
 script:
-  - julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
+  - julia --color=yes --project --handle-signals=no -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
 
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.2 ]] ; then julia --color=yes --project=. -e 'using Pkg;
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.1 ]] ; then julia --color=yes --project=. -e 'using Pkg;
                                                                                                                    Pkg.add("Coverage");
                                                                                                                    using Coverage;
                                                                                                                    Codecov.submit(process_folder())' ; fi
